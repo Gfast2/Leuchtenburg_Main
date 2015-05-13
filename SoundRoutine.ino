@@ -232,9 +232,9 @@ void handleNewSound(int newSound) {
   // (finish)          And if the weight is lighter again, (heavey->middle->less). In this direction, nothing should be said.
   // (finish) decide9: State jump from sound group 4 to sound group 3 shouldn't trigger sounds in group 3. Because of the logics.
   // (finish) decide10:If it is always in the mode of Sound group 2 and 6. Every 20 Seconds, a new sound of these group should be spoken. That means. When we getting '2' more then 20 sec. We read out next sound in these group.
-  //          decide11:Sound in group5 should not read from 13 to 11. But can be read from ascending direction.
+  // (finish) decide11:Sound in group5 should not read from 13 to 11. But can be read from ascending direction.
   // (finish) decide12:If it is always in group1 sound mode. Every 20 Second (or after a random time) should read out one of sounds in group1.
-  //          decide13:Check out the sound buffer system. And let it buffer very correctely.
+  // (finish) decide13:Check out the sound buffer system. And let it buffer very correctely.
   pt("in handleNewSound(int). \nnewSound now: ");
   pl(newSound);
   if (newSound == 5) { //if stop all playing stopped.
@@ -397,7 +397,7 @@ void sound(int soundState) {
   pt(songBuffer[0]);  pt(" ");  pl(songBuffer[1]);
 }
 
-// method to blending five different ambient sounds.
+// method to control five different ambient sounds.
 void soundAmb(int amb){
   switch(amb){
     case 1:
