@@ -167,13 +167,13 @@ void setup()
   digitalWrite(chipDriver, LOW);    //LOW setzt RS485 Chip auf Listen 
 
   pinMode(EndSchalterPin[1], INPUT);
-  pinMode(MagnetPin[1], OUTPUT);
+  pinMode(MagnetPin[1],     OUTPUT);
   pinMode(EndSchalterPin[2], INPUT);
-  pinMode(MagnetPin[2], OUTPUT);
+  pinMode(MagnetPin[2],     OUTPUT);
   pinMode(EndSchalterPin[3], INPUT);
-  pinMode(MagnetPin[3], OUTPUT);
+  pinMode(MagnetPin[3],     OUTPUT);
   pinMode(EndSchalterPin[4], INPUT);
-  pinMode(MagnetPin[4], OUTPUT);
+  pinMode(MagnetPin[4],     OUTPUT);
   
   pinMode(NotAusPin, INPUT);
 
