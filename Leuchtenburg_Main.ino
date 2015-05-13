@@ -558,7 +558,7 @@ else {
 
 }//----------------------Ende NotAus Else 
 
-sound(StatusNeu); //I'm not sure if the statusNeu always be updated in this position.
+sound(StatusNeu); //TODO: Give this method the correct argument.
    
 } //---------------------End of loop
 

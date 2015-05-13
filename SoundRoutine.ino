@@ -4,7 +4,7 @@
  *
  *
  * written by: Su Gao
- * Last edite: 28 Apr. 2015
+ * Last edite: 13. Mai 2015
  */
 
 int dauerMap[21] = {
