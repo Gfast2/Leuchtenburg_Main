@@ -210,152 +210,94 @@ void setup()
 */
 
 void loop(){
-  NotAusStatus = digitalRead(NotAusPin);    
+  NotAusStatus = digitalRead(NotAusPin);
   if ((NotAusStatus == 1)||(NotAusPressed == true)){
     NotAusHandling(); // in this metod there is no sound handling code. TODO: if we add sound handling, too.
   } 
   else{        //Wenn kein Notausgedrückt ist NormalSchleife 
-
-
 //----------Check ob Neukalibirierung erforderlich (Berührung Endschalter oder lange Inaktiv)------------
-
-            //Endschalter einlesen, wenn Kontakt dann Neukalibrierung  
-
-
-  
-            for (int i=1;i<=4;i++){                            
-              EndSchalter[i] = digitalRead(EndSchalterPin[i]);
-            }
-              
-            if ((EndSchalter[1] == 0)||(EndSchalter[2] == 0)||(EndSchalter[3] == 0)||(EndSchalter[4] == 0)) {  //wenn Endschalter Kontakt Neukalibrierung 
-             StartWert = 1; 
-            }
-          
-            if ((millis()-Waagezeit_inaktiv) > Waagezeit_Konstante){
-             StartWert = 1; 
-
-            }
-  
-//--------------------------------------------------------------------------------------------------------------
-  
-if (StartWert == 1){        //Beim ersten Durchlauf kein G_Max Handling
-      if (FirstStart != 1){
-          G_MaxHandling();  
-          }
-          calibration();
-          if (FirstStart == 1){
-          FirstStart = 0;
-          }
-      }
+    //Endschalter einlesen, wenn Kontakt dann Neukalibrierung  
+    for (int i=1;i<=4;i++)  EndSchalter[i] = digitalRead(EndSchalterPin[i]);              
+    if ((EndSchalter[1] == 0)||(EndSchalter[2] == 0)||(EndSchalter[3] == 0)||(EndSchalter[4] == 0))  StartWert = 1; //wenn Endschalter Kontakt Neukalibrierung 
+    if ((millis()-Waagezeit_inaktiv) > Waagezeit_Konstante)                                          StartWert = 1; 
+//--------------------------------------------------------------------------------------------------------------  
+    if (StartWert == 1){        //Beim ersten Durchlauf kein G_Max Handling
+      if (FirstStart != 1)  G_MaxHandling();  
+      calibration();
+      if (FirstStart == 1)  FirstStart = 0;
+    }          
+    else{
+//------------Gewicht einlesen und Gewichtsänderung feststellen-------------------------------------------------
+      StatusChange = false; 
       
-    
-else {
-  
- //------------Gewicht einlesen und Gewichtsänderung feststellen-------------------------------------------------
-  StatusChange = false; 
-  
-  G_Change = 0;          //Gewichtswechsel-Flag auf NULL setzen
-  WaageBeladen = 0;
-  G_WaageMax = 0; // reset.
-  for (int j=1;j<=4;j++){
-    weightRead(j);//Gewicht einlesen
-    delay(5);//Pause zum nächsten Transmitter
-    
-    if (Gewicht[j] < 0){Gewicht[j] = 0;}
-    
-    //Serial.print(String(j) + ": ");
-    //Serial.println(Gewicht[j]);
-    
-    //G_Schwellwert = G_SchwellwertMin + (Gewicht[j]/20.);
-  
-    if (Gewicht[j] > G_Max){
-        ZuSchwer[j] = true;
-    }
-    else {
-      ZuSchwer[j] = false;      
-    }
-     
-    if (Gewicht[j]>G_SchwellwertMin){  //Music
-        WaageBeladen += 1;             //Wenn Gewicht auf Waage Variable + 1;
-       }                               //Music
+      G_Change = 0;          //Gewichtswechsel-Flag auf NULL setzen
+      WaageBeladen = 0;
+      G_WaageMax = 0; // reset.
+      
+      for (int j=1;j<=4;j++){
+        weightRead(j);  // Gewicht einlesen
+        delay(5);       // Pause zum nächsten Transmitter        
+        if (Gewicht[j] < 0)              Gewicht[j]  = 0;        
+        if (Gewicht[j] > G_Max)          ZuSchwer[j] = true;        
+        else                             ZuSchwer[j] = false;                      
+        if (Gewicht[j]>G_SchwellwertMin) WaageBeladen += 1;  // Wenn Gewicht auf Waage Variable + 1.  Music
+        if ((j==1)||(j==4)){
+          if(Gewicht[1] > G_WaageMax)    G_WaageMax = Gewicht[1];
+        }
+        else if(Gewicht[j] * 2 > G_WaageMax)  G_WaageMax = Gewicht[j] * 2;   
+      }
    
-   if ((j==1)||(j==4)){
-   if(Gewicht[1] > G_WaageMax){
-     G_WaageMax = Gewicht[1];
-   }
-   }
-   else if(Gewicht[j] * 2 > G_WaageMax){
-     G_WaageMax = Gewicht[j] * 2;
-   }
-   
-   
-   
-   }
-   
-  if(G_WaageMax > G_Schwelle3){
-    G_Zustand = 3;
-  }
-  else if(G_WaageMax > G_Schwelle2){
-    G_Zustand = 2;
-  }
-  else if(G_WaageMax > G_Schwelle1){
-    G_Zustand = 1;
-  }
-  else{
-    G_Zustand = 0;
-  }
+      if(G_WaageMax > G_Schwelle3)         G_Zustand = 3;
+      else if(G_WaageMax > G_Schwelle2)    G_Zustand = 2;
+      else if(G_WaageMax > G_Schwelle1)    G_Zustand = 1;
+      else                                 G_Zustand = 0;
 
-
-  if ((ZuSchwer[1] == true)||(ZuSchwer[2] == true)||(ZuSchwer[3] == true)||(ZuSchwer[4] == true)){
-    sound(9); // "Alles raus"
-    G_Zustand = 4;
-    Errorhandling(); 
-  }
-
-  else{
-     if (FirstTimeError == 2){
-        FirstTimeError = 0;
+      if ((ZuSchwer[1] == true)||(ZuSchwer[2] == true)||(ZuSchwer[3] == true)||(ZuSchwer[4] == true)){
+        sound(9); // "Alles raus"
+        G_Zustand = 4;
+        Errorhandling(); 
+      }      
+      
+      else{ // the "real routine"
+        if (FirstTimeError == 2){
+          FirstTimeError = 0;
 //LICHT//-------------------------------------------------------------------
-        LEDSerial.print("lt A1500 B1500 C1500 D1500;");
-        //LEDSerial.print("kerze;");
-        LEDSerial.print("lt Ka Kb Kc Kd;");        
-     }
-     
-     if (Gewicht[4] > G_SchwellwertMin + 2){
-        if (FalscheZutatTrigger == false){
-          FalscheZutatTrigger = true;
-          LEDSerial.print("lt A0 B0 C0 D3000;");
-          LEDSerial.print("lt KD;");
+          LEDSerial.print("lt A1500 B1500 C1500 D1500;");
+          LEDSerial.print("lt Ka Kb Kc Kd;");        
         }
-     } 
-     else {
-        if (FalscheZutatTrigger == true){
-        FalscheZutatTrigger = false;
-        LEDSerial.print("lt A1500 B1500 C1500 D1500;");
-        LEDSerial.print("kerze;");
-        LEDSerial.print("lt Ka Kb Kc Kd;"); 
-        }
-     }
      
-          
-     
-// Soundkanal4 Steuerung (Nahe an Loesung)
-   GewichtSumme = Gewicht[1] + Gewicht[2] + Gewicht[3];
+       if (Gewicht[4] > G_SchwellwertMin + 2){
+          if (FalscheZutatTrigger == false){
+            FalscheZutatTrigger = true;
+            LEDSerial.print("lt A0 B0 C0 D3000;");
+            LEDSerial.print("lt KD;");
+          }
+       } 
+       else if(FalscheZutatTrigger == true){
+         FalscheZutatTrigger = false;
+         LEDSerial.print("lt A1500 B1500 C1500 D1500;");
+         LEDSerial.print("kerze;");
+         LEDSerial.print("lt Ka Kb Kc Kd;"); 
+       }
+
+       // Soundkanal4 Steuerung (Nahe an Loesung)
+       GewichtSumme = Gewicht[1] + Gewicht[2] + Gewicht[3];   
+       G_Schwellwert = G_SchwellwertMin + (GewichtSumme /20.);
    
-   G_Schwellwert = G_SchwellwertMin + (GewichtSumme /20.);
-   
-   if ((GewichtSumme > 35) && ((Gewicht[1] != 0) && (Gewicht[2] != 0) && (Gewicht[3] != 0) && (Gewicht[4] < G_SchwellwertMin))){ 
-   FaktorRichtig = (abs(((GewichtSumme / 2.) / Gewicht[1])-1) + abs(((GewichtSumme / 4.) / Gewicht[2])-1) + abs(((GewichtSumme / 4.) / Gewicht[3])-1));
-   //FaktorRichtig = FaktorRichtig / 3.;
-   }
-   else {
-     FaktorRichtig = 2.;
-     //Channel4 leise
-     }
+       if(
+       (GewichtSumme >35) && 
+       (Gewicht[1] != 0) && 
+       (Gewicht[2] != 0) && 
+       (Gewicht[3] != 0) && 
+       (Gewicht[4] <  G_SchwellwertMin)
+       )
+         FaktorRichtig = abs(((GewichtSumme / 2.) / Gewicht[1])-1) + 
+                         abs(((GewichtSumme / 4.) / Gewicht[2])-1) + 
+                         abs(((GewichtSumme / 4.) / Gewicht[3])-1);
+       else{
+         FaktorRichtig = 2.;         
+       }
      
-   //Serial.print("Faktor: ");
-   //Serial.print(FaktorRichtig);
-  
    if (((FaktorRichtig <= 0.6)&&(GewichtSumme > 10)) && (Gewicht[4] < G_SchwellwertMin)){  //Fast Richtig
       if (FaktorWarRichtig == false){                   
       //LEDSerial.print("sd D" + String(Volume4) + ";");
@@ -539,7 +481,6 @@ else {
     delay(4000);    
     LEDSerial.print("kerze;");       
 //SOUND//-------------------------------------------------------------------
-    //Serial1.write((byte)0x30);
     stop(36);
     //play(30);
     soundAmb(1);
@@ -616,27 +557,14 @@ else {
       soundStatus_do = soundStatus_alt;
     }
   } //else wuerde das soundStatus direkt hingeschickt.
-  else{
-    
+  else{    
     soundStatus_alt = soundStatus; //Wenn die Zahl von kleine nach grosse geht, sollte soundStatus_alt immer akualisiert wird.
     soundStatus_do = soundStatus;
   }
-  
-  
-  //Serial.print(F("soundStatus_alt: "));
-  //Serial.print(soundStatus_alt);
-  //Serial.print(F("soundStatus_do: "));
-  //Serial.print(soundStatus_do);
-  //Serial.print(F("soundStatus: "));
-  //Serial.println(soundStatus);
-
-  sound(soundStatus_do); //TODO: Give this method the correct argument.
+  sound(soundStatus_do);
   }//--------------------Ende Schleife wenn Maximalgewicht nicht ueberschritten
-
 }//----------------------Ende Normalschleife (falls kein Endschalter gedrückt) 
-
-}//----------------------Ende NotAus Else 
-   
+}//----------------------Ende NotAus Else    
 } //---------------------End of loop
 
 
