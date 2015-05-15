@@ -3,7 +3,7 @@ void calibration(){
   LEDSerial.print("kerze;");       //"kerze" bedeutet flackern
   //LEDSerial.print("play 1;"); 
 //SOUND//---------------------------------------------------------------  
-  Serial1.write((byte)0x30); //direct play the first song
+  //Serial1.write((byte)0x30); //direct play the first song
   //Serial1.write((byte)0x0D); //start
   
   
