@@ -17,9 +17,9 @@ const int Minimalgewicht = 10;      //wenn Gewicht < Minimalgewicht dann keine L
 const int G_Max = 250;            //Maximalgewicht (Wert*10g), für Skalierung Beschleunigung, V_Max und Fehlererkennung 
 
 // Schwellwerte fuer Audio steuerungen
-const int G_Schwelle1 = 150;
-const int G_Schwelle2 = 180;
-const int G_Schwelle3 = 210;
+const int G_Schwelle1 = 170;
+const int G_Schwelle2 = 200;
+const int G_Schwelle3 = 230;
 int       G_Zustand=0; // 4 -> G>G_Max, 3 -> G>G_Schwelle3, 2 -> G>G_Schwelle2, 1 -> G>G_Schwelle1, 0 -> G>G_Min.
 int       G_WaageMax = 0; // Max. Gewicht von 4 Schale.
 
@@ -35,7 +35,6 @@ const float a_Max = 5.;           //Maximalbeschleunigung in Hz/ms;
 const int Schwellwert = 200;      //zulässige Differenz zur Zielposition
 const int WrongFadeOut = 5000;     //Zeit in ms wie lange Falscher Ton bleibt
 const long MagnetMaxTime = 12000;
-//const long BremsWegMax = 10000; //optional falls reale Geschwindigkeit einbezogen wird
 
 long MagnetOnTime;
 
@@ -48,14 +47,12 @@ int G_MaxFlag = 0;  //Set when G > G_Max
 int FirstStart = 1;
 
 //Pin Definition
-
 int chipDriver = 2;                     //RS485 Treiber für Gewichtstransmitter (HalbDuplex)
 int EndSchalterPin[5]={0,40,42,52,50};  //Induktive Endschalter
 int MagnetPin[5]={0,51,53,41,43};       //Zugmagnete
 int NotAusPin = 3;                      //NotTaste vom Kontrollraum aus
 
 //Ende Pin Definition
-
 int NotAusStatus = 0;
 boolean NotAusPressed = false;
 
@@ -87,23 +84,9 @@ long Position[5]={0,0,0,0,0};
 long PositionAlt[5];
 long PositionSoll[5];
 
-//-----------------Für Berechnung aktuelle Geschwindigkeit und Bremsweg
-/*
-long v_Ref;
-long v_Aktuell[5];
-const long v_Min = 2000;
-long Bremsweg[5];
-float Speed[5];
-long TimeAlt[5];
-long TimeNeu[5];
-*/
-//-----------------
-
 int Richtung[5];
 
 boolean M_Done[5]={true, true, true, true, true};
-
-//-----
 
 long Gewicht[5];
 long GewichtAlt[5];
@@ -128,35 +111,36 @@ boolean TimeWrongGestartet = false;
 int StatusNeu;
 int StatusAlt; 
 boolean StatusChange = false;
-//-----
 
 long drehwert = 0;
 
 long kippPosition = -45000;
 long kippPosUnten = -80000;
 
-long ErrorDist = -30000;    //wenn Gewicht auf Schaale 4 dann fährt ein Motor um ErrorDistanz nach oben
+long ErrorDist =    -30000;    //wenn Gewicht auf Schaale 4 dann fährt ein Motor um ErrorDistanz nach oben
 
-long PosOben = -35000;
+long PosOben =      -35000;
 long PosMitteOben = -45000;
-long PosMitte = -55000;
-long PosMitteUnten = -65000;
-long PosUnten = -75000;
+long PosMitte =     -55000;
+long PosMitteUnten =-65000;
+long PosUnten =     -75000;
 
 long AnschlagOben = -10000;    //Schutzwert falls Waageschale zu hoch oder zu tief fährt
-long AnschlagUnten = -93000;
+long AnschlagUnten =-93000;
 
 long WegW1, WegW2;
 
 long StartPosition[5]={0, PosMitteOben, PosMitteUnten, PosMitteUnten, PosMitte};
 
-int soundStatus    = 1; // status var fuer Audio steuern.
-int soundStatus_do = 1; // status tatsaechlich nach sound routine geschickt.
+int soundStatus    = 1;                 // status var fuer Audio steuern.
+int soundStatus_do = 1;                 // status tatsaechlich nach sound routine geschickt.
 const long soundbuffer_interval = 4000; // wenn die neu soundStatus Zahl kleiner als die alte ist, warte 2 sekunde.
-int soundStatus_alt= 1; // Die alte sound status fuer die Zeit Puffer.
-unsigned long soundbuffer = 0; // Timing marker.
-boolean soundbuffer_trigger = true; // trigger or not trigger the soundbuffer.
-//------------------------------------------------------------------------------------
+int soundStatus_alt= 1;                 // Die alte sound status fuer die Zeit Puffer.
+unsigned long soundbuffer = 0;          // Timing marker.
+boolean soundbuffer_trigger = true;     // trigger or not trigger the soundbuffer.
+
+boolean FalscheZutatTrigger = false;
+
 /*
  _______  _______ _________          _______ 
 (  ____ \(  ____ \\__   __/|\     /|(  ____ )
@@ -167,18 +151,15 @@ boolean soundbuffer_trigger = true; // trigger or not trigger the soundbuffer.
 /\____) || (____/\   | |   | (___) || )      
 \_______)(_______/   )_(   (_______)|/       
 */                                       
-
 void setup()
 {
-  Serial3.begin(115200); //Gewichtstransmitter
+  Serial.begin(115200);  //Rechner  
+  Serial1.begin(57600);  //WAVE Trigger board from Sparkfun
   Serial2.begin(115200); //Motoren
-  Serial.begin(115200); //Rechner  
-  Serial1.begin(57600); //WAVE Trigger board from Sparkfun
+  Serial3.begin(115200); //Gewichtstransmitter
+  LEDSerial.begin(38400);  //Softwareserial für LEDs und Musikshield
   
   Serial.println(F("\nI started."));
-  
-  LEDSerial.begin(38400);  //Softwareserial für LEDs und Musikshield
-
   
   pinMode(chipDriver,OUTPUT);
   digitalWrite(chipDriver, LOW);    //LOW setzt RS485 Chip auf Listen 
@@ -190,44 +171,33 @@ void setup()
   pinMode(EndSchalterPin[3], INPUT);
   pinMode(MagnetPin[3],     OUTPUT);
   pinMode(EndSchalterPin[4], INPUT);
-  pinMode(MagnetPin[4],     OUTPUT);
-  
+  pinMode(MagnetPin[4],     OUTPUT);  
   pinMode(NotAusPin, INPUT);
 
   delay(1000);
-  
-      MotorHardStop(1);
-      MotorHardStop(2);
-      MotorHardStop(3);
-      MotorHardStop(4);   
+
+  MotorHardStop(1);
+  MotorHardStop(2);
+  MotorHardStop(3);
+  MotorHardStop(4);   
 
   delay(5000);
 //LICHT//-------------------------------------------------------------------  
   LEDSerial.print("kerze;");       //"kerze" bedeutet flackern
   delay(50);  
 //SOUND//-------------------------------------------------------------------  
-  // Start these tracks to play.
-  for(int i = 30; i<36; i++)
-    play(i);
-  // Set these five channel loop.
-  for(int i = 30; i<36; i++)
-    trackLoop(i,0x05); //turn on track loop
-    //trackLoop(30,1); //turn on track loop
-  for(int i=1; i<18; i++) // Stellen alle Gelesenetext wenige laut.
-    volumnTrack(i,-10); //Lautstark fuer alle lesen text.
-  for(int i=18; i<21; i++)
-    volumnTrack(i,-5);
-  //LEDSerial.print("sd A90 B90 C90 D90 E90;"); // fade out all ambient sound
-  soundAmb(1); // pack all hard coded command together.
-  sound(0); // Wert an Sound Routine schicken.
+  volumnTrack(36,-5); //Lautstark fuer alle lesen text.
+  for(int i = 30; i<36; i++)  play(i);// Start these tracks to play.
+  for(int i = 30; i<36; i++)  trackLoop(i,0x05);        // Set these five channel loop.
+  for(int i=1; i<18; i++)     volumnTrack(i,-13);       // Stellen alle Gelesenetext wenige laut.
+  for(int i=18; i<21; i++)    volumnTrack(i,-5);
+  soundAmb(1);                                          // pack all hard coded command for Ambient sound control together.
+  sound(0);                                             // Wert an Sound Routine schicken, um sound(0) zu initialisieren.
   delay(50);
 //SOUND//-------------------------------------------------------------------
-
     Serial.println("setup finished 2"); 
-   
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------
 /*
  _        _______  _______  _______ 
 ( \      (  ___  )(  ___  )(  ____ )
@@ -239,16 +209,12 @@ void setup()
 (_______/(_______)(_______)|/  
 */
 
-void loop()
-{
-  
-NotAusStatus = digitalRead(NotAusPin);
-    
-if ((NotAusStatus == 1)||(NotAusPressed == true)){
-   NotAusHandling(); // in this metod there is no sound handling code. TODO: if we add sound handling, too.
-}
- 
-else {        //Wenn kein Notausgedrückt ist NormalSchleife 
+void loop(){
+  NotAusStatus = digitalRead(NotAusPin);    
+  if ((NotAusStatus == 1)||(NotAusPressed == true)){
+    NotAusHandling(); // in this metod there is no sound handling code. TODO: if we add sound handling, too.
+  } 
+  else{        //Wenn kein Notausgedrückt ist NormalSchleife 
 
 
 //----------Check ob Neukalibirierung erforderlich (Berührung Endschalter oder lange Inaktiv)------------
@@ -312,9 +278,17 @@ else {
     if (Gewicht[j]>G_SchwellwertMin){  //Music
         WaageBeladen += 1;             //Wenn Gewicht auf Waage Variable + 1;
        }                               //Music
-   if(Gewicht[j] > G_WaageMax){
-     G_WaageMax = Gewicht[j];
+   
+   if ((j==1)||(j==4)){
+   if(Gewicht[1] > G_WaageMax){
+     G_WaageMax = Gewicht[1];
    }
+   }
+   else if(Gewicht[j] * 2 > G_WaageMax){
+     G_WaageMax = Gewicht[j] * 2;
+   }
+   
+   
    
    }
    
@@ -342,10 +316,28 @@ else {
      if (FirstTimeError == 2){
         FirstTimeError = 0;
 //LICHT//-------------------------------------------------------------------
-        LEDSerial.print("kerze;"); 
+        LEDSerial.print("lt A1500 B1500 C1500 D1500;");
+        //LEDSerial.print("kerze;");
+        LEDSerial.print("lt Ka Kb Kc Kd;");        
      }
      
+     if (Gewicht[4] > G_SchwellwertMin + 2){
+        if (FalscheZutatTrigger == false){
+          FalscheZutatTrigger = true;
+          LEDSerial.print("lt A0 B0 C0 D3000;");
+          LEDSerial.print("lt KD;");
+        }
+     } 
+     else {
+        if (FalscheZutatTrigger == true){
+        FalscheZutatTrigger = false;
+        LEDSerial.print("lt A1500 B1500 C1500 D1500;");
+        LEDSerial.print("kerze;");
+        LEDSerial.print("lt Ka Kb Kc Kd;"); 
+        }
+     }
      
+          
      
 // Soundkanal4 Steuerung (Nahe an Loesung)
    GewichtSumme = Gewicht[1] + Gewicht[2] + Gewicht[3];
@@ -513,30 +505,13 @@ else {
       else if ((StatusNeu == 14)&&(DoneFlag == 0)){              //DONE!!!
 	DoneFlag = 1;
         FaktorWarRichtig = false;     
-//SOUND//-------------------------------------------------------------------
-        //LEDSerial.print("sd A90 B90 C90 D90 E90;");
-        /*
-        volumnTrack(31,-70);  // A
-        volumnTrack(32,-70);  // B
-        volumnTrack(33,-70);  // C
-        volumnTrack(34,-70);  // D
-        volumnTrack(35,-70);  // E
-        */
-        //soundAmb(1);
-
-//SOUND//-------------------------------------------------------------------
-        //Serial1.write((byte)0x31); // Direct-Song-Play
-        stop(30);
         play(36); // only when the finish sound start to play, stop this sound.
         volumnTrack(36,-5);
         trackLoop(36,1); //loop this sound
         delay(50);
-        //Serial1.write((byte)0x0D); // Start to play
 //LICHT//-------------------------------------------------------------------
         LEDSerial.print("blink;");         
-      }
-       
-//Serial.println(StatusNeu);
+      }      
      
       if (StatusNeu == 13){
         Waagezeit_inaktiv = millis();           //Falls StatusÄnderung Reset Waagezeit_inaktiv (für Restart nach bestimmter Inaktivzeit)
@@ -556,17 +531,17 @@ else {
   }
   
   if ((DoneFlag == 1) && (M_Done[1] == true) && (M_Done[2] == true) && (M_Done[3] == true) && (M_Done[4] == true)){
-    delay(2000);
+    delay(3000);
     static int textWarter = 0; // hilfsmittel fuer erfolgreich sound loop
     textWarter++;
     int textTrigger = textWarter % 3; // from 0 to 2
     play(18+textTrigger); // the finish sound track start from 18.
-    delay(5000);    
+    delay(4000);    
     LEDSerial.print("kerze;");       
 //SOUND//-------------------------------------------------------------------
     //Serial1.write((byte)0x30);
     stop(36);
-    play(30);
+    //play(30);
     soundAmb(1);
     DoneFlag = 0;
     calibration();

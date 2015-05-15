@@ -417,7 +417,7 @@ void soundAmb(int amb){
       volumnTrack(34,-5);  // D      
       volumnTrack(35,-70); // E
 */    
-      trackFade(34,-5,2000);
+      trackFade(34,-10,2000);
       trackFade(35,-70,2000);
       break;
     case 3:
@@ -426,7 +426,7 @@ void soundAmb(int amb){
       volumnTrack(35,-5);  // E
 */
       trackFade(34,-70,2000);
-      trackFade(35,-5,2000);
+      trackFade(35,-10,2000);
       break;
     case 4:
 /*
@@ -434,16 +434,17 @@ void soundAmb(int amb){
       volumnTrack(35,-70);  // E      
 */    
       for(int i=34; i<36; i++)
-      //  trackFade(i,-70,2000);
+        trackFade(i,-70,4000);
       break;
     case 5:
 /*    
       volumnTrack(31,-5);  // A
       volumnTrack(32,-5);  // B
       volumnTrack(33,-5);  // C
-*/
-      for(int i=31; i<34; i++)
+*/    trackFade(33,-10,3000);  
+      for(int i=31; i<33; i++)
         trackFade(i,-5,3000);
+        
       break;
     case 6:
 /*

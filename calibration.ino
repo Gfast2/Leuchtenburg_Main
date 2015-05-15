@@ -334,9 +334,8 @@ Waagezeit_inaktiv = millis();
 //SOUND//---------------------------------------------------------------
 //Serial1.write((byte)0x30);
   stop(36);
-  play(30); // only when the finish sound start to play, stop this sound.
-  volumnTrack(30,-5);
-  trackLoop(30,1); //loop this sound
+  //play(30); // only when the finish sound start to play, stop this sound.
+  //volumnTrack(30,-5);
 delay(50);
 
 

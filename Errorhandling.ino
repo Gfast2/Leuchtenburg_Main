@@ -4,7 +4,16 @@ void Errorhandling()
   if (FirstTimeError == 0){
     FirstTimeError = 1;
 //LICHT//-------------------------------------------------------------------
-    LEDSerial.print("lt E0;"); 
+    //LEDSerial.print("lt E0;");     
+    LEDSerial.print("lt A0 B0 C0 D0;");
+    if (ZuSchwer[1]==true) 
+      LEDSerial.print("lt KA A3000;");
+    if (ZuSchwer[2]==true) 
+      LEDSerial.print("lt KB B3000;");
+    if (ZuSchwer[3]==true) 
+      LEDSerial.print("lt KC C3000;");
+    if (ZuSchwer[4]==true) 
+      LEDSerial.print("lt KD D3000;");    
   }
   
   else if (FirstTimeError == 1){
