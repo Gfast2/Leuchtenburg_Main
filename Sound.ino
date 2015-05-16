@@ -24,16 +24,13 @@ void eom() {
 //Play track
 void play(int track) {
   som();
-  Serial1.write(0x08); //indicate the total number of bytes in the message
-  Serial1.write(0x03); // message code, range of 0x00 to 0x7f, here is CONTROL_TRACK
-  Serial1.write(0x01); //data * n.(LSB first and the MSB second), Play track polyphonically
-  //Serial1.write((byte)track);
-  //Serial1.write((byte)0x00);
-  //divide a int into two byte using bit mask
+  Serial1.write(0x08);               //indicate the total number of bytes in the message
+  Serial1.write(0x03);               // message code, range of 0x00 to 0x7f, here is CONTROL_TRACK
+  Serial1.write(0x01);               //data * n.(LSB first and the MSB second), Play track polyphonically
   byte msb = (track & 0xFF00) >> 8;
   byte lsb =  track & 0x00FF;
-  Serial1.write(lsb); //LSB, song number is up to 999 limited (hardware limitation).
-  Serial1.write(msb); //MSB, http://forum.arduino.cc/index.php?topic=45769.0
+  Serial1.write(lsb);                //LSB, song number is up to 999 limited (hardware limitation).
+  Serial1.write(msb);                //MSB, http://forum.arduino.cc/index.php?topic=45769.0
   eom();
 }
 
@@ -43,8 +40,6 @@ void playSolo(int track) {
   Serial1.write(0x08);
   Serial1.write(0x03);
   Serial1.write((byte)0x00);
-  //Serial1.write((byte)track);
-  //Serial1.write((byte)0x00);
   byte msb = (track & 0xFF00) >> 8;
   byte lsb =  track & 0x00FF;
   Serial1.write(lsb);
@@ -58,8 +53,6 @@ void stop(int track) {
   Serial1.write(0x08);
   Serial1.write(0x03);
   Serial1.write(0x04);
-  //Serial1.write((byte)track);
-  //Serial1.write((byte)0x00);
   byte msb = (track & 0xFF00) >> 8;
   byte lsb =  track & 0x00FF;
   Serial1.write(lsb);
@@ -119,9 +112,9 @@ void volumnTrack(int track, int volumn) {
 //En-/Disable on board AMP
 void ampEnable(boolean on) {
   som();
-  Serial1.write(0x06); //indicate the total number of bytes in the message
-  Serial1.write(0x09); // message code, range of 0x00 to 0x7f, here is CONTROL_TRACK
-  Serial1.write(on == true ? 1 : 0); //data * n.(LSB first and the MSB second), Play track polyphonically
+  Serial1.write(0x06);                 // indicate the total number of bytes in the message
+  Serial1.write(0x09);                 // message code, range of 0x00 to 0x7f, here is CONTROL_TRACK
+  Serial1.write(on == true ? 1 : 0);   // data * n.(LSB first and the MSB second), Play track polyphonically
   eom();
 }
 
@@ -142,7 +135,7 @@ void trackFade(int track, int volumn, long milis) {
   byte lsb_milis =  milis & 0x00FF;
   Serial1.write(lsb_milis);
   Serial1.write(msb_milis);
-  Serial1.write((byte)0x00); //nict stop
+  Serial1.write((byte)0x00); // don't stop
   eom();
 }
 
