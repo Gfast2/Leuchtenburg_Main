@@ -1,6 +1,6 @@
 int SetNewStatus(int Status, int Gewicht4){
   
-long ErrorWeg;
+  long ErrorWeg;
   
   if ((Gewicht4 > G_SchwellwertMin) && (GewichtChange4==true)){
       ErrorWeg = ErrorDist;
@@ -129,24 +129,21 @@ long ErrorWeg;
         }
         
         
-        
-        
         for (int i=1; i<=4; i++){
-          if (PositionSoll[i] > AnschlagOben) PositionSoll[i] = AnschlagOben; 
+          if      (PositionSoll[i] > AnschlagOben ) PositionSoll[i] = AnschlagOben; 
           else if (PositionSoll[i] < AnschlagUnten) PositionSoll[i] = AnschlagUnten; 
 
         }        
 }
 
 //-----------------------------------------------------------------------------------------------------------------------
-
 void UpdateMotorCharacter(){
   
   int MotorAnzahl = 3;
   
   long WegMax;        //Zwischenspeichern des längsten Fahrweges als Referenz für die Beschleunigungsberechnung
   long WegRest[5];
-  int WegMax_Motor;    //MotorID des Motors mit dem längsten Fahrweg
+  int WegMax_Motor;   //MotorID des Motors mit dem längsten Fahrweg
   long GewichtDiff;   //Differenzgewicht zwischen bewegter Masse nach oben und unten
   
   float FaktorMotor[5];
@@ -161,7 +158,6 @@ void UpdateMotorCharacter(){
     if (Richtung[i]==0) GewichtDiff += Gewicht[i];
     else GewichtDiff -= Gewicht[i];
     
-    
     WegRest[i] = abs(PositionSoll[i]-Position[i]);
       if (WegRest[i] >= WegMax){
           WegMax = WegRest[i];
@@ -172,38 +168,33 @@ void UpdateMotorCharacter(){
   GewichtDiff = abs(GewichtDiff);
  
   for (int i=1;i<=MotorAnzahl;i++){
-    FaktorMotor[i] = float(WegRest[i])/float(WegMax);    
+    FaktorMotor[i] = float(WegRest[i])/float(WegMax);        
+  }
     
-}
-  
-  
-    a_Ref = (map(GewichtDiff, 0., G_Max, a_Min*10, a_Max*10))/10.;
-
+  a_Ref = (map(GewichtDiff, 0., G_Max, a_Min*10, a_Max*10))/10.;
     
- for (int i=1;i<=MotorAnzahl;i++){
+  for (int i=1;i<=MotorAnzahl;i++){
     a_Aktuell[i] = FaktorMotor[i]*(a_Ref);
     if (a_Aktuell[i] < 0.02) {a_Aktuell[i] = 0.02;}
     if ((StatusNeu == 14)&&(a_Aktuell[i] < 1.)) a_Aktuell[i] = 1.;
     
     b_Value[i] = (pow((3000./((a_Aktuell[i]*BremsFaktor)+11.7)), 2.));
     a_Value[i] = (pow((3000./(a_Aktuell[i]+11.7)), 2.));
-    }
-
-      Serial2.println("#1b"+String(a_Value[1]));    //aktualisierte Beschleunigungsrampe setzen
-      Serial2.println("#2b"+String(a_Value[2]));    //aktualisierte Beschleunigungsrampe setzen
-      Serial2.println("#3b"+String(a_Value[3]));    //aktualisierte Beschleunigungsrampe setzen
-      Serial2.println("#4b"+String(a_Value[4]));  //aktualisierte Maximalgeschwindigkeit setzen
-      delay(10);
- 
-      Serial2.println("#1B"+String(b_Value[1]));    //aktualisierte Bremsrampe setzen
-      Serial2.println("#2B"+String(b_Value[2]));    //aktualisierte Bremsrampe setzen
-      Serial2.println("#3B"+String(b_Value[3]));    //aktualisierte Bremsrampe setzen
-      Serial2.println("#4B"+String(b_Value[4]));    //aktualisierte Maximalgeschwindigkeit setzen
-      delay(10);
-            
-      while (Serial2.read() >= 0); //mySerial Buffer leeren
-   
   }
+
+  Serial2.println("#1b"+String(a_Value[1]));    //aktualisierte Beschleunigungsrampe setzen
+  Serial2.println("#2b"+String(a_Value[2]));    //aktualisierte Beschleunigungsrampe setzen
+  Serial2.println("#3b"+String(a_Value[3]));    //aktualisierte Beschleunigungsrampe setzen
+  Serial2.println("#4b"+String(a_Value[4]));    //aktualisierte Maximalgeschwindigkeit setzen
+  delay(10); 
+  Serial2.println("#1B"+String(b_Value[1]));    //aktualisierte Bremsrampe setzen
+  Serial2.println("#2B"+String(b_Value[2]));    //aktualisierte Bremsrampe setzen
+  Serial2.println("#3B"+String(b_Value[3]));    //aktualisierte Bremsrampe setzen
+  Serial2.println("#4B"+String(b_Value[4]));    //aktualisierte Maximalgeschwindigkeit setzen
+  delay(10);        
+  while (Serial2.read() >= 0);                  //mySerial Buffer leeren 
+
+}
   
    
     
