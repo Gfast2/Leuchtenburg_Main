@@ -4,7 +4,7 @@
  *
  *
  * written by: Su Gao
- * Last edite: 13. Mai 2015
+ * Last edite: 16. Mai 2015
  */
 
 int dauerMap[21] = {
@@ -12,10 +12,10 @@ int dauerMap[21] = {
   10, 2, 
   2, 4, 4, 
   9, 3, 
-  5, 7, 5/*einigt*/, 
-  6, 6, 6, 8/*einigt*/, 
-  12, 2, 4 // *enigt means there are two sound in the same position from the RAW sound data. The this time long means the longest of the two.
-}; //Unit:Sec. track the length of each sentence.
+  5, 7, 5    /*einigt*/, 
+  6, 6, 6, 8 /*einigt*/, 
+  12, 2, 4   // *enigt means there are two sound in the same position from the RAW sound data. The this time long means the longest of the two.
+};           //Unit:Sec. track the length of each sentence.
 
 enum soundName {
   s1A = 1, s1B, s1C,
@@ -25,7 +25,7 @@ enum soundName {
   s5A, s5B, s5C,
   s6A, s6B, s6C, s6D,
   s7A, s7B, s7C
-}; //Song name for each track.
+};           //Song name for each track.
 
 boolean finishTalk = true;    // flagged if one sentence finished to be talked.
 unsigned long talkTimer = 0;  // record the start time point of sentences.
@@ -40,32 +40,15 @@ int shuffel(int situation) { //situation should from 1-7
   const int limit[7] = {3, 2, 3, 2, 3, 4, 3}; //different group have different possibility (number of songs)
   int returnVal = 0;
   if (situation == 1) {
-    //group[0] = group[0] > limit[0] ? group[0]++ : 1; //TODO: this line have logical problem.
     group[0]++;
-    if (group[0] > limit[0])
-      group[0] = 1;
-    //pl("group[0] now: ");  //pt(group[0]);
+    if (group[0] > limit[0])  group[0] = 1;
     return group[0];
   }
   else {
-    for (int i = 0; i < (situation - 1); i++) {
-      returnVal += limit[i];
-    }
-    //Serial.print(" returnVal1: ");
-    //Serial.println(returnVal);
+    for (int i = 0; i < (situation - 1); i++)  returnVal += limit[i];
     returnVal += group[situation - 1];
-    //Serial.print(" returnVal2: ");
-    //Serial.println(returnVal);
-    //the used group song number+1
-    //group[situation-1] = group[situation-1] > limit[situation-1] ? group[situation-1]++ : 1;
     group[situation - 1]++;
-    if (group[situation - 1] > limit[situation - 1]) {
-      group[situation - 1] = 1;
-    }
-    //    Serial.print("group[situation-1] now: ");
-    //    Serial.println(group[situation-1]);
-//    Serial.print("Now play song: ");
-//    Serial.println(returnVal);
+    if (group[situation - 1] > limit[situation - 1])  group[situation - 1] = 1;
     return returnVal;
   }
 }
@@ -95,13 +78,10 @@ void say(int track) {
 
 // return if the sentence finished to be read
 boolean finishedTalk() {
-  if (said == 0) {
-    return true;
-  } else {
-    if (millis() - talkTimer > 1000 * dauerMap[said - 1])
-      return true;
-    else
-      return false;
+  if (said == 0)  return true;
+  else {
+    if (millis() - talkTimer > 1000 * dauerMap[said - 1])    return true ;
+    else                                                     return false;
   }
 }
 
@@ -110,9 +90,7 @@ boolean freshSound(int soundState) {
   static boolean freshed = false;
   static int soundState_old = 1; //static, old status from last loop. After each calibration or the main programm start at the first time. group1 sound should be played.
   freshed = soundState == soundState_old ? false : true;
-  if (freshed == true) {
-    soundState_old = soundState; // update the old one.
-  }
+  if (freshed == true)  soundState_old = soundState; // update the old one.
   return freshed;
 }
 
@@ -121,9 +99,7 @@ boolean freshSound(int soundState) {
 // true  :  Priority is handled
 // false :  Priority is not handled
 boolean handleSoundPriority(int newSound) { // from s4A to s5c is from 009 to 013
-  //pl("in handleSoundPriority(int)");
   if (newSound == s4A || newSound == s4B || newSound == s5A || newSound == s5B || newSound == s5C) { //these are the importent ones.
-    //pl("priority handled");
     songBuffer[1] = songBuffer[0]; //push back the old "next song"
     songBuffer[0] = newSound;
     return true;
@@ -134,14 +110,6 @@ boolean handleSoundPriority(int newSound) { // from s4A to s5c is from 009 to 01
   }
   else {
     songBuffer[1] = newSound;
-    //pt("stage 1: songBuffer[0] and songBuffer[1]: ");
-    //pt(songBuffer[0]);  //pt(" ");  //pl(songBuffer[1]);
-    /*
-    if(songBuffer[0] == NULL)  songBuffer[0] = newSound;//Sound Buffer handling.
-    else                       songBuffer[1] = newSound;
-    pt("stage 2: songBuffer[0] and songBuffer[1]: ");
-    pt(songBuffer[0]);  pt(" ");  pl(songBuffer[1]);
-    */
     return false;
   }
 }
@@ -151,26 +119,16 @@ int soundState34_old = s3A; //soundState of the last time.
 // Meanwhile if weight go from very heavy (group4) to less heavy (group3). Sounds in group3 shouldn't be read.
 // return true when problem is handled. (When shound should not be read, because the weight is go from heavy to less heavy)
 boolean handleGroup34(int soundState) {
-  //pt("in handleGroup34(int) and return: ");
   if (soundState >= s3A && soundState <= s4B) { //if new coming in sound is in group3 or group4.
     if (soundState < soundState34_old) {
-      //soundState34_old = soundState;
-      //pl("true");
-      //pt("songState_old = "); //pl(soundState34_old);
-      //pt("songState     = "); //pl(soundState    );
-      return true; //problem in group3 and group4 is handled.
-    } else { //
+      return true;                   //problem in group3 and group4 is handled.
+    } 
+    else {
       soundState34_old = soundState; //soundState is a value in group3 or group4. and is not handled.
-      //pl("false");
-      //pt("songState_old = "); //pl(soundState34_old);
-      //pt("songState     = "); //pl(soundState    );
       return false;
     }
   }
   soundState34_old = s3A; //When comes to here, soundState is a value nothing to do with group3 and group4. update old soundState to the first sound on group3 (sound with smallest)
-  //pl("false. (number out of gourp3 and group4.)");
-  //pt("songState_old = "); //pl(soundState34_old);
-  //pt("songState     = "); //pl(soundState    );
   return false;
 }
 
@@ -179,33 +137,21 @@ int soundState5_old = s5A; //soundState of the last time.
 // Meanwhile if weight go from very heavy (group4) to less heavy (group3). Sounds in group3 shouldn't be read.
 // return true when problem is handled. (When shound should not be read, because the weight is go from heavy to less heavy)
 boolean handleGroup5(int soundState) {
-  //pt("in handleGroup5(int) and return: ");
   if (soundState >= s5A && soundState <= s5C) { //if new coming in sound is in group3 or group4.
-    if (soundState < soundState5_old) {
-      //soundState_old = soundState;
-      //pl("true");
-      //pt("songState5_old = "); //pl(soundState5_old);
-      //pt("songState     = "); //pl(soundState    );
+    if (soundState < soundState5_old)  
       return true; //problem in group3 and group4 is handled.
-    } else { //
+    else {
       soundState5_old = soundState; //soundState is a value in group3 or group4. and is not handled.
-      //pl("false");
-      //pt("songState_old = "); //pl(soundState5_old);
-      //pt("songState     = "); //pl(soundState    );
       return false;
     }
   }
   soundState5_old = s5A; //When comes to here, soundState is a value nothing to do with group3 and group4. update old soundState to the first sound on group3 (sound with smallest)
-  //pl("false. (number out of gourp5.)");
-  //pt("songState_old = "); //pl(soundState5_old);
-  //pt("songState     = "); //pl(soundState    );
   return false;
 }
 
 //stop all playing songs, sofort.
 void stopPlaying() {
   stopAll();
-  //TODO: reset variable for speak finish check mechanism.
 }
 
 const long INTERVAL4 = 20000; //20 seconds.
@@ -235,21 +181,16 @@ void handleNewSound(int newSound) {
   // (finish) decide11:Sound in group5 should not read from 13 to 11. But can be read from ascending direction.
   // (finish) decide12:If it is always in group1 sound mode. Every 20 Second (or after a random time) should read out one of sounds in group1.
   // (finish) decide13:Check out the sound buffer system. And let it buffer very correctely.
-  //pt("in handleNewSound(int). \nnewSound now: ");
-  //pl(newSound);
   if (newSound == 5) { //if stop all playing stopped.
-    //pl("newSound=5, stop play all songs");
     stopPlaying();    
     finishTalk = true;
     songBuffer[0] = NULL;
     songBuffer[1] = NULL; //TODO: handle the situation when buffer is NULL.
-  } else {
-    finishTalk = finishedTalk(); //track if the old sound have been finished.
-    //pl("newSound is not number 5. Check if finishTalk.");
+  } 
+  else {
+    finishTalk = finishedTalk(); //track if the old sound have been finished.    
     boolean handled = handleSoundPriority(newSound); //check if the newSound is a importent sound to be speak out.
     if (finishTalk == true) {
-      //pl("finishTalk");
-      //boolean handled = handleSoundPriority(newSound); //check if the newSound is a importent sound to be speak out.
       if (songBuffer[0] != NULL) {
         say(songBuffer[0]);
         songBuffer[0] = NULL;
@@ -258,23 +199,10 @@ void handleNewSound(int newSound) {
           songBuffer[1] = 0;
         }
       }
-      /*
-      if (handled == false) {
-        songBuffer[0] = songBuffer[1];
-        songBuffer[1] = newSound;
-      }
-      */
     }
   }
 
-  /*
   // Still have song to be played + the last Song is finished to be played.
-    if(songBuffer[0] != NULL && finishTalk==true){
-      songBuffer[0] = songBuffer[1];
-      songBuffer[1] = NULL;
-      say(songBuffer[0]);
-    }
-    */
   if (newSound == 9 || newSound == 10 || newSound == 4) {//directly call a specified sound data or '4' for this group.
     trigger4 = true;
     trigger4Timer = millis();
@@ -319,22 +247,6 @@ void handleGroup1(){
 void handleSong() {
   finishTalk = finishedTalk();
   if (finishTalk == true) {
-    /*
-    if(songBuffer[0] != NULL){
-      say(songBuffer[0]);
-      songBuffer[0] = NULL;
-
-    //      if(songBuffer[1] != NULL){
-    //        songBuffer[0] = songBuffer[1];
-    //        songBuffer[1] = NULL;
-    //      }
-    }
-    if(songBuffer[1] != NULL){
-      songBuffer[0] = songBuffer[1];
-      songBuffer[1] = NULL;
-      //say(songBuffer[0]);
-    }
-    */
     if (songBuffer[0] != NULL) {
       say(songBuffer[0]);
       songBuffer[0] = NULL;
@@ -357,7 +269,6 @@ void handleGroup26(int soundState) {
   if (times26 > 2)
     trigger26 = true;
   if (millis() - trigger2Timer > INTERVAL2 && soundState == 2) {
-    //TODO:
     handleNewSound(2); //read next sounds in group2 and group4.
   }
 }
@@ -374,132 +285,82 @@ void soundFlagesReset() {
 // the main sound routine.
 // INPUT: Sound Status number, which descript the Sound status for now.
 void sound(int soundState) {
-  //pl("In sound(int) now");
   if (freshSound(soundState) == true) //only when new sound routine comes in, we will go on handling stuff.
   {
-    //pl("freshSound(int) is true");
     boolean handled34 = handleGroup34(soundState);
     boolean handled5  = handleGroup5(soundState);
-    if (!handled34 && !handled5){
-      //pl("new song handled.");
+    if (!handled34 && !handled5)
       handleNewSound(soundState); //When there is new songs comes in. Process new songs and play the next song if it is the correct time point.
-    }
-  } else {
-    //pl("old song processed.");
+  } 
+  else {
     handleSong(); //When there is no new songs comes in. process sounds buffer.
   }
   handleGroup4();
   handleGroup26(soundState);
   handleGroup1();
-
-  //pt("songBuffer[0] & songBuffer[1]: ");
-  //pt(songBuffer[0]);  
-  //pt(" ");  
-  //pl(songBuffer[1]);
 }
 
 // method to control five different ambient sounds.
+// In this method we finde some issue caused by trackFade(int,int,long). If it is used too much, code can be compiled, but not sucessful uploaded.
 void soundAmb(int amb){
   switch(amb){
-    case 1:
-    
+    case 1:    
       volumnTrack(31,-70);  // A
       volumnTrack(32,-70);  // B
       volumnTrack(33,-70);  // C
       volumnTrack(34,-70);  // D
       volumnTrack(35,-70);  // E
-
-      //for(int i=31; i<36; i++)
-      //  trackFade(i,-70,2000);
       break;
     case 2:
-/*    
-      volumnTrack(34,-5);  // D      
-      volumnTrack(35,-70); // E
-*/    
       trackFade(34,-10,2000);
       trackFade(35,-70,2000);
       break;
     case 3:
-/*
-      volumnTrack(34,-70); // D
-      volumnTrack(35,-5);  // E
-*/
       trackFade(34,-70,2000);
       trackFade(35,-10,2000);
       break;
     case 4:
-/*
-      volumnTrack(34,-70);  // D
-      volumnTrack(35,-70);  // E      
-*/    
       for(int i=34; i<36; i++)
         trackFade(i,-70,4000);
       break;
     case 5:
-/*    
-      volumnTrack(31,-5);  // A
-      volumnTrack(32,-5);  // B
-      volumnTrack(33,-5);  // C
-*/    trackFade(33,-10,3000);  
+      trackFade(33,-10,3000);  
       for(int i=31; i<33; i++)
-        trackFade(i,-5,3000);
-        
+        trackFade(i,-5,3000);        
       break;
     case 6:
-/*
-      volumnTrack(31,-5);  // A
-      volumnTrack(32,-5);  // B
-      volumnTrack(33,-70); // C    
-*/
       for(int i=31; i<33; i++)
         trackFade(i,-5,2000);
       trackFade(33,-70,3000);
       break;
     case 7:
-/*
-      volumnTrack(31,-5);  // A
-      volumnTrack(32,-70);  // B
-      volumnTrack(33,-70);  // C 
-*/    
       trackFade(31,-5,2000);
       for(int i=32; i<34; i++)
         trackFade(i,-70,3000);
       break;
     case 8:
-/*
-      volumnTrack(31,-70);  // A
-      volumnTrack(32,-70);  // B
-      volumnTrack(33,-70);  // C
-*/
       for(int i=31; i<34; i++)
         trackFade(i,-70,3000);
       break;
     default:
       Serial.println(F("soundAmb(int) has a unguilty value"));
-  }
-  
+  }  
 }
-
 
 //simplified code notize.Strings in "F(String)" will be not loaded directely in memonry, only when they is needed. In order to save memonry.
 void pl(String note){
-  //Serial.println(F(note));
   Serial.println(note);
 }
 
 void pl(int note){
-  //Serial.println(F(note));
   Serial.println(note);
 }
 
 //the same as pl(Sring). But without a '\n' at the end of it.
 void pt(String note){
   Serial.print(note);
-  //printf_P(PSTR(note));
 }
 
 void pt(int note){
   Serial.print(note);
-  //printf_P(PSTR(note));
 }
