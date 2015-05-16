@@ -2,11 +2,7 @@ void calibration(){
 
   LEDSerial.print("kerze;");       //"kerze" bedeutet flackern
   delay(100);  
-  volumnTrack(31,-70);  // A
-  volumnTrack(32,-70);  // B
-  volumnTrack(33,-70);  // C
-  volumnTrack(34,-70);  // D
-  volumnTrack(35,-70);  // E
+  soundAmb(1);
   delay(50);
 
   Waagezeit_inaktiv = millis();  
@@ -110,182 +106,113 @@ void calibration(){
   }
   //----Ende Einschub ZeroSetting
     
-    
-    
-    
-    
-    
-    
-    //TODO  :  Refactoring stay here.
-    
-    
-    
-    
-    
-    
-    
-    
-    
-if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus
-
+  if ((NotAusPressed == false) && (G_MaxFlag == 0)){  // Zusatz Notaus  
     for (int i=1;i<=4;i++){
-        SetMotorRichtung(i, 1);
-        MotorStart(i);
-    }
-
-}//Zusatz Notaus
+      SetMotorRichtung(i, 1);
+      MotorStart(i);
+    }  
+  }  // Zusatz Notaus
     
-//--> Serial.println("Wieder hoch!");
+  while(
+  ( (Position[1] < PosOben) || 
+    (Position[2] < PosOben) || 
+    (Position[3] < PosOben) || 
+    (Position[4] < PosOben)) && 
+  (NotAusPressed == false)   && 
+  (G_MaxFlag == 0)){
+    
+    if (FirstStart != 1)  G_MaxHandling();  
 
-
-    while (((Position[1] < PosOben) || (Position[2] < PosOben) || (Position[3] < PosOben) || (Position[4] < PosOben))&&(NotAusPressed == false) && (G_MaxFlag == 0)){
-      
-      if (FirstStart != 1){
-          G_MaxHandling();  
-          }
-
-      
-      for (int i=1; i<=4;i++){
-        GetPosition(i);
-        delay(10);
-        if (Position[i] >= PosOben){
-          MotorHardStop(i);
-        }
-
-        if (((Position[i] >= kippPosition) && (KippStatus[i] == 1))||((millis()-MagnetOnTime) > MagnetMaxTime)){
-          KippStatus[i] = 0;
-          digitalWrite(MagnetPin[i],LOW);
-        }
+    for (int i=1; i<=4;i++){
+      GetPosition(i);
+      delay(10);
+      if (Position[i] >= PosOben)  MotorHardStop(i);
+      if (((Position[i] >= kippPosition) && (KippStatus[i] == 1)) ||
+         ((millis()-MagnetOnTime) > MagnetMaxTime)){
+        KippStatus[i] = 0;
+        digitalWrite(MagnetPin[i],LOW);
       }
-//--------NOTAUSROUTINE START
+    }
+      
+    //--------NOTAUSROUTINE START
     NotAusStatus = digitalRead(NotAusPin);
     
     if ((NotAusStatus == 1)||(G_MaxFlag == 1)){
-    NotAusHandling();
+      NotAusHandling();
       for (int k=1;k<=4;k++){
         digitalWrite(MagnetPin[k],LOW);
         KippStatus[k] = 0;
       }
     }
-//--------NOTAUSROUTINE START
+    //--------NOTAUSROUTINE START    
+  }
 
-    }
-
-
-    // -------------------------------------------------------------------------------------------------------------------------------
-    // Motoren jetzt in der jeweiligen StartPosition
-    // -------------------------------------------------------------------------------------------------------------------------------
- 
- 
-    Serial2.println("#1o4000"); //Maximalfrequenz Seite50
-    delay(10);
-    Serial2.println("#2o4000"); //Maximalfrequenz Seite50
-    delay(10);
-    Serial2.println("#3o4000"); //Maximalfrequenz Seite50
-    delay(10);
-    Serial2.println("#4o4000"); //Maximalfrequenz Seite50
-    delay(10);  
-
-if ((NotAusPressed == false)&&(G_MaxFlag == 0)){  //Zusatz Notaus
-
-
-    for (int i=1;i<=4;i++){
-    SetMotorRichtung(i, 0);  //runter
-    MotorStart(i);
-    }
-} //Zusatz Notaus
-
-    while (((M_Done[1] == false) || (M_Done[2] == false) || (M_Done[3] == false) || (M_Done[4] == false))&&(NotAusPressed == false)&&(G_MaxFlag == 0)){
-      
-      if (FirstStart != 1){
-          G_MaxHandling();  
-          }
-      
-      for (int i=1; i<=4;i++){
-        GetPosition(i);       
-        /*if (abs(Position[i]-StartPosition[i]) < Schwellwert){
-          MotorHardStop(i);
-        }
-        else if ((Position[i]<StartPosition[i])&&(Richtung[i] == 0)){
-          SetMotorRichtung(i, 1);
-        }
-        
-        else if ((Position[i]>StartPosition[i])&&(Richtung[i] == 1)){
-          SetMotorRichtung(i, 0);
-        }
-        */
-        if (Position[i] < StartPosition[i]){
-          MotorHardStop(i);
-          }
-        delay(10);
-//        Serial.print(".");
-
-      }
-
-//--------NOTAUSROUTINE START
-    NotAusStatus = digitalRead(NotAusPin);
-    
-    if (NotAusStatus == 1){
-    NotAusHandling();
-    }
-//--------NOTAUSROUTINE START
-
-
-    }
-    
-    
+  // -------------------------------------------------------------------------------------------------------------------------------
+  // Motoren jetzt in der jeweiligen StartPosition
+  // -------------------------------------------------------------------------------------------------------------------------------
   
+  Serial2.println("#1o4000"); //Maximalfrequenz Seite50
+  delay(10);
+  Serial2.println("#2o4000"); //Maximalfrequenz Seite50
+  delay(10);
+  Serial2.println("#3o4000"); //Maximalfrequenz Seite50
+  delay(10);
+  Serial2.println("#4o4000"); //Maximalfrequenz Seite50
+  delay(10);  
+
+  if ((NotAusPressed == false)&&(G_MaxFlag == 0)){  //Zusatz Notaus  
+    for (int i=1;i<=4;i++){
+      SetMotorRichtung(i, 0);  //runter
+      MotorStart(i);
+    }
+  } //Zusatz Notaus
+
+  while (
+  ( (M_Done[1] == false) || 
+    (M_Done[2] == false) || 
+    (M_Done[3] == false) || 
+    (M_Done[4] == false))  &&
+  (NotAusPressed == false) &&
+  (G_MaxFlag == 0)){
+    
+    if (FirstStart != 1)  G_MaxHandling();  
+     
+    for (int i=1; i<=4;i++){
+      GetPosition(i);            
+      if (Position[i] < StartPosition[i])  MotorHardStop(i);
+      delay(10);
+    }
+    
+    //--------NOTAUSROUTINE START
+    NotAusStatus = digitalRead(NotAusPin);    
+    if (NotAusStatus == 1)  NotAusHandling();
+    //--------NOTAUSROUTINE START  
+  }
+    
   delay(10);
   Serial2.println("#*o10000"); //Maximalfrequenz Seite50
-
   delay(1000);                 //Ausschwingzeit vor Nullreset Wägezellen      
  
+  for (int i=1; i<=4;i++){
+    weightRead(i);
+    delay(10);
+    if (Gewicht[i] < 10) zero(i);
+    while(Serial3.available() > 0)    Serial3.read();
+  }
  
-        for (int i=1; i<=4;i++){
-          weightRead(i);
-          delay(10);
-        if (Gewicht[i] < 10) zero(i);
-        //delay(10);
-        while(Serial3.available() > 0){
-          Serial3.read();
-          }
-        }
- 
-   
- if ((NotAusPressed == false)&&(G_MaxFlag == 0)){  //Zusatz Notaus
-   
-        StartWert = 0;
-        StatusNeu = 13;
-        StatusAlt = 13;
+  if ((NotAusPressed == false)&&(G_MaxFlag == 0)){  //Zusatz Notaus
+    StartWert = 0;
+    StatusNeu = 13;
+    StatusAlt = 13;
 
+    LEDSerial.print("kerze;");  
+    Waagezeit_inaktiv = millis();    
+  }  //Zusatz Notaus
 
-//SOUND//---------------------------------------------------------------
-LEDSerial.print("play 1;"); //at first make all sound channel
-delay(50);
-//LICHT//-------------------------------------------------------------------
-LEDSerial.print("kerze;");  
-Waagezeit_inaktiv = millis();
-
-//NotAusPressed = false;
-
-}  //Zusatz Notaus
-
-//SOUND//---------------------------------------------------------------
-//LEDSerial.print("sd A90 B90 C90 D90 E90 F90;");
-  volumnTrack(31,-70);  // A
-  volumnTrack(32,-70);  // B
-  volumnTrack(33,-70);  // C
-  volumnTrack(34,-70);  // D
-  volumnTrack(35,-70);  // E
-//SOUND//---------------------------------------------------------------
-//Serial1.write((byte)0x30);
+  soundAmb(1);
   stop(36);
-  //play(30); // only when the finish sound start to play, stop this sound.
-  //volumnTrack(30,-5);
-delay(50);
+  delay(50);
 
-
-Serial.println("Calibration finished");
-   
+  Serial.println("Calibration finished");   
 }
 
