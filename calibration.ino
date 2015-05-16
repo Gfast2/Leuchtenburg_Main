@@ -1,25 +1,7 @@
 void calibration(){
-//LICHT//-------------------------------------------------------------------
+
   LEDSerial.print("kerze;");       //"kerze" bedeutet flackern
-  //LEDSerial.print("play 1;"); 
-//SOUND//---------------------------------------------------------------  
-  //Serial1.write((byte)0x30); //direct play the first song
-  //Serial1.write((byte)0x0D); //start
-  
-  
-  //This part set all channel to 0 with default blendspeed that used in Musik & sound control board
-  //LEDSerial.print("sd A0 B0 C0 D0 E0 F0 G0 H0;");
-  //delay(5000);
-  //LEDSerial.print("sd a15 b15 c15 d15 e15 f15 g15 h15;"); //set new default blend speed
-  //delay(5000);
-  //finish reset blendspeed & blendspeed reset to 15 for each channel.
-  
-  
-//SOUND//---------------------------------------------------------------
-  //LEDSerial.print("sd a10 b10 c10 d5 e5 f10;"); //sound blendeing speed control, don't need it anymore.
   delay(100);  
-//SOUND//---------------------------------------------------------------
-  //LEDSerial.print("sd A90 B90 C90 D90 E90 F90;");
   volumnTrack(31,-70);  // A
   volumnTrack(32,-70);  // B
   volumnTrack(33,-70);  // C
@@ -28,158 +10,122 @@ void calibration(){
   delay(50);
 
   Waagezeit_inaktiv = millis();  
-  
-  
-//LICHT//-------------------------------------------------------------------
+    
   LEDSerial.print("lt E0;");    //alle Lichter ausschalter
   delay(1000);
-//LEDSerial.print("stt A B C D;");
 
   ZustandFaktor = 0;
 
-
   SetMotorStartValues();
-  
-  
-    //---------------------------------------
 
-//--------NOTAUSROUTINE START
-    NotAusStatus = digitalRead(NotAusPin);
+  //--------NOTAUSROUTINE START
+  NotAusStatus = digitalRead(NotAusPin);  
+  if ((NotAusStatus == 1)||(NotAusPressed == true))  NotAusHandling(); 
+  //--------NOTAUSROUTINE START
+
+  for (int i=1; i<=4;i++){    
+    EndSchalter[i]=digitalRead(EndSchalterPin[i]);
+    GetPosition(i);
+
+    //Addon NotAus Start   
+    if ((EndSchalter[i] == 1) && (NotAusPressed == false) && (G_MaxFlag == 0))  MotorStart(i);
+    //Addon NotAus Ende      
+  }
     
-    if ((NotAusStatus == 1)||(NotAusPressed == true)){
-    NotAusHandling();
-}
-//--------NOTAUSROUTINE START
-
-    for (int i=1; i<=4;i++){
-      
-      EndSchalter[i]=digitalRead(EndSchalterPin[i]);
-      GetPosition(i);
-
-//Addon NotAus Start   
-      if ((EndSchalter[i] == 1) && (NotAusPressed == false) && (G_MaxFlag == 0)){
-        MotorStart(i);
-      }
-//Addon NotAus Ende      
-    }
-    
-    while(((EndSchalter[1] == 1)||(EndSchalter[2] == 1)||(EndSchalter[3] == 1)||(EndSchalter[4] == 1))&&(NotAusPressed == false) && (G_MaxFlag == 0)) {
-      
-      if (FirstStart != 1){
-          G_MaxHandling();  
-          }
-      
-      for (int i=1;i<=4;i++){
+  while(((EndSchalter[1] == 1)||(EndSchalter[2] == 1)||(EndSchalter[3] == 1)||(EndSchalter[4] == 1))&&(NotAusPressed == false) && (G_MaxFlag == 0)) {    
+    if (FirstStart != 1)  G_MaxHandling();      
+    for (int i=1;i<=4;i++){
       EndSchalter[i] = digitalRead(EndSchalterPin[i]);
-      if (EndSchalter[i] == 0) {
-        MotorHardStop(i);
-      }
-      
-      //else CheckForError(i);
-      
-      }
- 
-//--------NOTAUSROUTINE START
-    NotAusStatus = digitalRead(NotAusPin);
-    
-    if ((NotAusStatus == 1)||(NotAusPressed == true)){
-    NotAusHandling();
-    }
-//--------NOTAUSROUTINE START
-      
-    }
+      if (EndSchalter[i] == 0)  MotorHardStop(i);    
+    }    
+    //--------NOTAUSROUTINE START
+    NotAusStatus = digitalRead(NotAusPin);  
+    if ((NotAusStatus == 1)||(NotAusPressed == true))  NotAusHandling();
+    //--------NOTAUSROUTINE START    
+  }
 
 
-    // -------------------------------------------------------------------------------------------------------------------------------
-    // Motoren jetzt ganz oben
-    // -------------------------------------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------------------------------------------
+  // Motoren jetzt ganz oben
+  // -------------------------------------------------------------------------------------------------------------------------------
+  Serial2.println("#*o7000"); //Maximalfrequenz Seite50
+  delay(10);
+  Serial2.println("#*D0");    //Drehüberwachung Reset
+  delay(10);
 
-    Serial2.println("#*o7000"); //Maximalfrequenz Seite50
-    delay(10);
-    Serial2.println("#*D0"); //Drehüberwachung Reset
-    delay(10);
-
-if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus
-  
+  if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus  
     for (int i = 1; i<=4; i++){
-    SetMotorRichtung(i, 0);
-    KippStatus[i] == 0;
-    MotorStart(i);
+      SetMotorRichtung(i, 0);
+      KippStatus[i] == 0;
+      MotorStart(i);
     }
+  }   //Zusatz Notaus
 
-}   //Zusatz Notaus
+  // -------------------------------------------------------------------------------------------------------------------------------
+  // Motoren jetzt ganz unten und ausgeleert
+  // -------------------------------------------------------------------------------------------------------------------------------
 
-
-//-->     Serial.println("Motoren jetzt los nach unten");
-    // -------------------------------------------------------------------------------------------------------------------------------
-    // Motoren jetzt ganz unten und ausgeleert
-    // -------------------------------------------------------------------------------------------------------------------------------
-
-    while(((Position[1] > kippPosUnten) || (Position[2] > kippPosUnten) || (Position[3] > kippPosUnten) || (Position[4] > kippPosUnten))&&(NotAusPressed == false)&&(G_MaxFlag == 0))
-    {
-//-->      Serial.println(Position[1]);
-      
-      if (FirstStart != 1){
-          G_MaxHandling();  
-          }
-
-      
-      for (int i=1; i<=4; i++){
-        GetPosition(i);
-        delay(10);
-        if ((Position[i] <= kippPosition) && (KippStatus[i] == 0)) {
-          KippStatus[i] = 1; 
-          digitalWrite(MagnetPin[i],HIGH);
-        }
-      
-        if (Position[i] <= kippPosUnten){
-          MotorHardStop(i);
-        }
-      }
-      MagnetOnTime = millis();
-
-//--------NOTAUSROUTINE START
-    NotAusStatus = digitalRead(NotAusPin);
+  while(
+  ( (Position[1] > kippPosUnten) || 
+    (Position[2] > kippPosUnten) || 
+    (Position[3] > kippPosUnten) || 
+    (Position[4] > kippPosUnten)
+  ) &&
+  (NotAusPressed == false) &&
+  (G_MaxFlag == 0))
+  {    
+    if(FirstStart != 1)  G_MaxHandling();        
+    for (int i=1; i<=4; i++){
+      GetPosition(i);
+      delay(10);
+      if ((Position[i] <= kippPosition) && (KippStatus[i] == 0)) {
+        KippStatus[i] = 1; 
+        digitalWrite(MagnetPin[i],HIGH);
+      }    
+      if (Position[i] <= kippPosUnten)  MotorHardStop(i);
+    }
     
+    MagnetOnTime = millis();
+
+    //--------NOTAUSROUTINE START
+    NotAusStatus = digitalRead(NotAusPin);  
     if ((NotAusStatus == 1)||(G_MaxFlag == 1)){
-    NotAusHandling();
+      NotAusHandling();
       for (int k=1;k<=4;k++){
         digitalWrite(MagnetPin[k],LOW);
-        KippStatus[k] = 0;
-
+        KippStatus[k] = 0;  
       }
     }
-//--------NOTAUSROUTINE START
-
+    //--------NOTAUSROUTINE START
+  }
+    
+  //----Eingeschoben ZeroSetting
+  if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus
+    delay(1000);
+    for (int i=1; i<=4;i++){
+      delay(10);
+      zero(i);
+      while(Serial3.available() > 0)  Serial3.read();
     }
+  }
+  //----Ende Einschub ZeroSetting
     
- //   delay(100);
-
-//----Eingeschoben ZeroSetting
-
-
-if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus
-
-delay(1000);
-for (int i=1; i<=4;i++){
-        delay(10);
-        zero(i);
-        //delay(10);
-        while(Serial3.available() > 0){
-          Serial3.read();
-          }
-        }
-
-}
-
-//----Ende Einschub ZeroSetting
-
-
-//-->     Serial.println("UNTEN");
     
-    //GetPosition(i);
-    //delay(10);
-
+    
+    
+    
+    
+    
+    //TODO  :  Refactoring stay here.
+    
+    
+    
+    
+    
+    
+    
+    
+    
 if ((NotAusPressed == false) && (G_MaxFlag == 0)){  //Zusatz Notaus
 
     for (int i=1;i<=4;i++){
