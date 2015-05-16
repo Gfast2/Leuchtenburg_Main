@@ -4,10 +4,7 @@ const char endOfNumberDelimiter   = '\r';
 void GetPosition(int motorNr){
   shaftEncoder(motorNr);
   Position[motorNr] = (drehwert);
-  //delay(10);
-  //Serial.println("motor " + String(motorNr) + "Position now: " + String(drehwert));
 }
-
 
 void shaftEncoder(int motorNr){
 	Serial2.print("#" + String(motorNr) + "I\r");
@@ -62,11 +59,5 @@ void processInput ()
 		if(numberTrigger)
 			negative = false;
 		break;
-		/*
-		default:
-		Serial.write(c);
-		Serial.println();
-		break;
-		*/
 	} // end of switch
 }  // end of processInput
