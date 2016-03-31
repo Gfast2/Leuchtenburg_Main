@@ -2,7 +2,7 @@ void calibration(){
 
   LEDSerial.print("kerze;");       //"kerze" bedeutet flackern
   delay(100);  
-  soundAmb(1);
+//  soundAmb(1);
   delay(50);
 
   Waagezeit_inaktiv = millis();  
@@ -209,7 +209,7 @@ void calibration(){
     Waagezeit_inaktiv = millis();    
   }  //Zusatz Notaus
 
-  soundAmb(1);
+//  soundAmb(1);
   stop(36); //When Rätsel gelöst, dann stop alle gelesene Text. (It didn't works. 2016-3-30).
   sound(5);
   delay(50);
