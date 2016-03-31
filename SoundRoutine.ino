@@ -300,6 +300,7 @@ void sound(int soundState) {
   handleGroup1();
 }
 
+/*
 // method to control five different ambient sounds.
 // In this method we finde some issue caused by trackFade(int,int,long). If it is used too much, code can be compiled, but not sucessful uploaded.
 void soundAmb(int amb){
@@ -346,6 +347,7 @@ void soundAmb(int amb){
       Serial.println(F("soundAmb(int) has a unguilty value"));
   }  
 }
+*/
 
 //simplified code notize.Strings in "F(String)" will be not loaded directely in memonry, only when they is needed. In order to save memonry.
 void pl(String note){
