@@ -65,8 +65,10 @@ void notAus() {
 void SetMotorStartValues(){  
   Serial2.println("#*S0");
   delay(10);
-  Serial2.println("#*i40");         //set motors' performance
+  Serial2.println("#*i60"); //set motors' performance, from 2016-3-2 set it from 40% to 65% on the vorne Waagen
   delay(10);
+  Serial2.println("#1i65"); // Stelle nur die erste Motor, programmiert nur fuer die vorne Waage
+  delay(20);
   Serial2.println("#*S");           //motor stop
   delay(10);
   Serial2.println("#*q0");          //Drehencoder direction exchange
